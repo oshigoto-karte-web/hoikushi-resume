@@ -154,8 +154,8 @@ const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(
 
 export default defineConfig({
   plugins,
-  // GitHub Pages用: ビルド時は /hoikushi-resume/ を使用、開発時は /
-  base: process.env.GITHUB_ACTIONS ? '/hoikushi-resume/' : (process.env.VITE_BASE_PATH || '/'),
+  // GitHub Pages用: /hoikushi-resume/ に固定（開発時はローカルプロキシが対応するため問題なし）
+  base: '/hoikushi-resume/',
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
