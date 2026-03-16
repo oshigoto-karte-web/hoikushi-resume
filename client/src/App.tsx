@@ -1,21 +1,27 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Router, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 // Design: クリーンフォーム業務系モダン - Teal primary, Light background, Noto Sans JP
 
 
-function Router() {
+// GitHub Pages用: /hoikushi-resume/ をベースパスに設定
+// 開発時はローカルプロキシが / にマッピングするため、import.meta.env.BASE_URLで自動対応
+const BASE_PATH = import.meta.env.BASE_URL.replace(/\/$/, "") || "";
+
+function AppRouter() {
   return (
-    <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
-      <Route component={NotFound} />
-    </Switch>
+    <Router base={BASE_PATH}>
+      <Switch>
+        <Route path={"/"} component={Home} />
+        <Route path={"/404"} component={NotFound} />
+        {/* Final fallback route */}
+        <Route component={NotFound} />
+      </Switch>
+    </Router>
   );
 }
 
@@ -33,7 +39,7 @@ function App() {
       >
         <TooltipProvider>
           <Toaster />
-          <Router />
+          <AppRouter />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>
