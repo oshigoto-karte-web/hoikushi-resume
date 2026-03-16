@@ -5,6 +5,7 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
+// Design: クリーンフォーム業務系モダン - Teal primary, Light background, Noto Sans JP
 
 
 function Router() {

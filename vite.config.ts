@@ -154,6 +154,8 @@ const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(
 
 export default defineConfig({
   plugins,
+  // GitHub Pages用: VITE_BASE_PATH環境変数が設定されている場合はそれを使用
+  base: process.env.VITE_BASE_PATH || '/',
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
