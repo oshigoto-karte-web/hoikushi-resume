@@ -1,95 +1,100 @@
 # GitHub Pages デプロイ手順
 
-このドキュメントでは、保育士職務経歴書作成ツールをGitHub Pagesに公開する手順を説明します。
-
-## 前提条件
-- GitHubアカウントを持っていること
-- Gitがローカルにインストールされていること
+このドキュメントでは、保育士 職務経歴書作成ツールを GitHub Pages に公開する手順を説明します。
 
 ---
 
-## 手順1: リポジトリを作成する
+## 前提条件
 
-1. [GitHub](https://github.com) にログインする
+- GitHub アカウントを持っていること
+- Git がローカルにインストールされていること（または GitHub Desktop を使用）
+
+---
+
+## 手順
+
+### 1. GitHub にリポジトリを作成する
+
+1. [github.com](https://github.com) にログインする
 2. 右上の「+」→「New repository」をクリック
-3. 以下のように設定する
-   - Repository name: `hoiku-resume`（任意の名前でOK）
-   - Visibility: **Public**（GitHub Pagesを無料で使うため）
-   - 「Initialize this repository with a README」は**チェックしない**
+3. 以下の設定でリポジトリを作成する
+   - **Repository name**: `hoiku-resume`（任意の名前でOK）
+   - **Visibility**: `Public`（GitHub Pages の無料利用には Public が必要）
+   - **Initialize this repository**: チェックしない（空のリポジトリを作成）
 4. 「Create repository」をクリック
 
 ---
 
-## 手順2: vite.config.ts の base を設定する
+### 2. コードを GitHub にプッシュする
 
-GitHub Pagesでは、サイトが `https://ユーザー名.github.io/リポジトリ名/` に公開されます。
-そのため、`vite.config.ts` の `base` を設定する必要があります。
-
-```ts
-// vite.config.ts の build セクションに追加
-build: {
-  base: '/hoiku-resume/',  // ← リポジトリ名に合わせて変更
-  outDir: ...,
-}
-```
-
-または、環境変数で制御する場合：
-```ts
-base: process.env.GITHUB_PAGES ? '/hoiku-resume/' : '/',
-```
-
----
-
-## 手順3: GitHub Actionsワークフローを設定する
-
-リポジトリに `.github/workflows/deploy.yml` を作成すると、
-`main` ブランチへのpushで自動的にビルド＆デプロイが実行されます。
-
-このリポジトリには既に `.github/workflows/deploy.yml` が含まれています。
-
----
-
-## 手順4: リポジトリにコードをプッシュする
+作成したリポジトリのページに表示されるコマンドを参考に、以下を実行します。
 
 ```bash
-# プロジェクトディレクトリに移動
+# プロジェクトのルートディレクトリで実行
 cd hoiku-resume
 
-# Gitを初期化（未初期化の場合）
-git init
+# リモートリポジトリを追加（YOUR_USERNAME と REPO_NAME を置き換えてください）
+git remote add origin https://github.com/YOUR_USERNAME/REPO_NAME.git
+
+# main ブランチにプッシュ
 git add .
 git commit -m "initial commit"
-
-# GitHubリポジトリと接続
-git remote add origin https://github.com/あなたのユーザー名/hoiku-resume.git
-git branch -M main
 git push -u origin main
 ```
 
+> **注意**: このプロジェクトはすでに `git init` 済みです。`git remote add` から始めてください。
+
 ---
 
-## 手順5: GitHub Pagesを有効にする
+### 3. GitHub Pages の設定を有効にする
 
-1. GitHubのリポジトリページを開く
-2. 「Settings」→「Pages」を開く
-3. 「Source」を **「GitHub Actions」** に設定する
+1. リポジトリページの「**Settings**」タブをクリック
+2. 左サイドバーの「**Pages**」をクリック
+3. **Source** を「**GitHub Actions**」に変更する
 4. 保存する
 
 ---
 
-## 手順6: デプロイ完了を確認する
+### 4. 自動デプロイを確認する
 
-1. 「Actions」タブでワークフローの実行状況を確認する
-2. 成功すると `https://あなたのユーザー名.github.io/hoiku-resume/` でアクセスできる
+- `main` ブランチへの push が完了すると、GitHub Actions が自動的にビルドとデプロイを実行します
+- リポジトリの「**Actions**」タブでデプロイの進捗を確認できます（通常 2〜3 分）
+- デプロイ完了後、以下の URL でアクセスできます
+
+```
+https://YOUR_USERNAME.github.io/REPO_NAME/
+```
 
 ---
 
-## ローカルでのビルド確認
+## 以降の更新方法
+
+コードを修正したら、以下のコマンドだけで自動的に再デプロイされます。
 
 ```bash
-pnpm build
-pnpm preview
+git add .
+git commit -m "変更内容の説明"
+git push origin main
 ```
+
+---
+
+## トラブルシューティング
+
+| 症状 | 原因 | 対処法 |
+|---|---|---|
+| ページが真っ白 | ベースパスの不一致 | リポジトリ名と `VITE_BASE_PATH` を確認 |
+| Actions が失敗する | 依存関係エラー | Actions タブのログを確認 |
+| 404 エラーが出る | Pages の設定が未完了 | Settings → Pages → Source を「GitHub Actions」に設定 |
+
+---
+
+## 仕組み（技術的な補足）
+
+- **ワークフローファイル**: `.github/workflows/deploy.yml`
+- **ビルドコマンド**: `pnpm build:pages`（フロントエンドのみビルド、サーバー不要）
+- **ベースパス**: `VITE_BASE_PATH` 環境変数でリポジトリ名を自動設定
+- **出力先**: `dist/public/` → GitHub Pages にアップロード
 
 ---
 
@@ -97,4 +102,3 @@ pnpm preview
 
 - `localStorage` のデータはブラウザごとに独立しています
 - スマートフォンとPCで同じデータを使いたい場合は、それぞれのブラウザで入力が必要です
-- データのエクスポート/インポート機能は現バージョンでは未実装です
