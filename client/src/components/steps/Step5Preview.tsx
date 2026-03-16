@@ -1,13 +1,14 @@
 // ステップ5: 確認・出力
 // Design: クリーンフォーム業務系モダン
-// PDF生成: visibility:hidden で常時レンダリングしたResumePreviewからPDFを生成
-// 修正: left:-9999px → visibility:hidden + position:fixed でレイアウト計算を安定化
+// PDF生成: @react-pdf/renderer の pdf() → Blob → URL でダウンロード
+// html2canvas を一切使わないため Safari/iOS でも動作する
 
 import { useState, useRef, useEffect } from 'react';
+import { pdf } from '@react-pdf/renderer';
 import { ResumeData } from '@/lib/types';
 import { ResumePreview } from '@/components/ResumePreview';
+import { ResumePdfDocument } from '@/lib/ResumePdfDocument';
 import { Button } from '@/components/ui/button';
-import { generatePdf } from '@/lib/generatePdf';
 import { Download, Loader2, FileText, RotateCcw, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -41,7 +42,21 @@ export function Step5Preview({ data, onReset }: Step5Props) {
       const name = data.fullName || '職務経歴書';
       const today = new Date();
       const dateStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
-      await generatePdf('resume-pdf-source', `職務経歴書_${name}_${dateStr}.pdf`);
+      const fileName = `職務経歴書_${name}_${dateStr}.pdf`;
+
+      // @react-pdf/renderer で PDF Blob を生成
+      const blob = await pdf(<ResumePdfDocument data={data} />).toBlob();
+
+      // Blob URL を作成してダウンロード
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
       toast.success('PDFをダウンロードしました');
     } catch (err) {
       console.error('PDF生成エラー:', err);
@@ -139,26 +154,6 @@ export function Step5Preview({ data, onReset }: Step5Props) {
           </p>
         </div>
       )}
-
-      {/* PDF生成専用の非表示プレビュー
-          visibility:hidden + position:fixed でレイアウト計算を安定化
-          display:none は使わない（html2canvasがキャプチャできないため） */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          visibility: 'hidden',
-          pointerEvents: 'none',
-          zIndex: -1,
-          width: '794px',
-        }}
-      >
-        <div id="resume-pdf-source">
-          <ResumePreview data={data} />
-        </div>
-      </div>
 
       {/* リセット */}
       <div className="pt-2 border-t border-border">
