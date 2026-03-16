@@ -1,6 +1,7 @@
 // ステップ5: 確認・出力
 // Design: クリーンフォーム業務系モダン
-// PDF生成: 画面外に常時レンダリングしたResumePreviewからPDFを生成
+// PDF生成: visibility:hidden で常時レンダリングしたResumePreviewからPDFを生成
+// 修正: left:-9999px → visibility:hidden + position:fixed でレイアウト計算を安定化
 
 import { useState, useRef, useEffect } from 'react';
 import { ResumeData } from '@/lib/types';
@@ -36,8 +37,6 @@ export function Step5Preview({ data, onReset }: Step5Props) {
 
   const handleDownload = async () => {
     setIsGenerating(true);
-    // 少し待ってDOMが確実にレンダリングされるようにする
-    await new Promise((r) => setTimeout(r, 100));
     try {
       const name = data.fullName || '職務経歴書';
       const today = new Date();
@@ -45,8 +44,9 @@ export function Step5Preview({ data, onReset }: Step5Props) {
       await generatePdf('resume-pdf-source', `職務経歴書_${name}_${dateStr}.pdf`);
       toast.success('PDFをダウンロードしました');
     } catch (err) {
-      console.error(err);
-      toast.error('PDF生成に失敗しました。もう一度お試しください。');
+      console.error('PDF生成エラー:', err);
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`PDF生成に失敗しました: ${msg}`);
     } finally {
       setIsGenerating(false);
     }
@@ -140,16 +140,19 @@ export function Step5Preview({ data, onReset }: Step5Props) {
         </div>
       )}
 
-      {/* PDF生成専用の非表示プレビュー（常時DOM上に存在） */}
+      {/* PDF生成専用の非表示プレビュー
+          visibility:hidden + position:fixed でレイアウト計算を安定化
+          display:none は使わない（html2canvasがキャプチャできないため） */}
       <div
         aria-hidden="true"
         style={{
-          position: 'absolute',
-          left: '-9999px',
+          position: 'fixed',
           top: 0,
-          width: '794px',
-          overflow: 'hidden',
+          left: 0,
+          visibility: 'hidden',
+          pointerEvents: 'none',
           zIndex: -1,
+          width: '794px',
         }}
       >
         <div id="resume-pdf-source">
