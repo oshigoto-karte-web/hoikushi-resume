@@ -34,9 +34,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build (frontend only)
-        run: pnpm build:pages
-        env:
-          VITE_BASE_PATH: /${{ github.event.repository.name }}/
+        run: pnpm build:pages --base=/${{ github.event.repository.name }}/
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
